@@ -48,6 +48,7 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
     if (!formData.callingName.trim()) newErrors.callingName = "Calling name is required"
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
     if (!formData.whatsappMobile.trim()) newErrors.whatsappMobile = "WhatsApp number is required"
+    if (!formData.field.trim()) newErrors.field = "Engineering field is required"
     if (!formData.email.trim()) {
       newErrors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -83,8 +84,16 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
       router.push("/dashboard/batchmates")
     } catch (error: any) {
       console.error("Error saving batchmate:", error)
+      console.error("Error details:", error.response?.data)
+      console.error("Form data sent:", formData)
+      
+      const errorMessage = error.response?.data?.error?.message || "Failed to save batchmate. Please try again."
+      const validationErrors = error.response?.data?.error?.details?.errors
+      
       sonnerToast.error("Error", {
-        description: error.response?.data?.error?.message || "Failed to save batchmate. Please try again.",
+        description: validationErrors 
+          ? `Validation error: ${validationErrors.map((e: any) => e.message).join(", ")}`
+          : errorMessage,
       })
     } finally {
       setIsLoading(false)
@@ -144,7 +153,7 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="field">Engineering Field</Label>
+              <Label htmlFor="field">Engineering Field *</Label>
               <Select
                 value={formData.field}
                 onValueChange={(value) => handleChange("field", value)}
@@ -161,6 +170,7 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.field && <p className="text-sm text-destructive">{errors.field}</p>}
               {user?.role === "field_admin" && (
                 <p className="text-xs text-muted-foreground">Field is automatically set to your assigned field</p>
               )}

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
-import { mockBatchmates } from "@/lib/mock-data"
+import { batchmateService } from "@/lib/api/services/batchmate.service"
 import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,23 +13,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FileSpreadsheet, FileText, Eye, Filter, BarChart3 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast as sonnerToast } from "sonner"
 
 type ReportType = "field" | "country"
 
 export default function ReportsPage() {
   const { user } = useAuth()
-  const { toast } = useToast()
+  const [batchmates, setBatchmates] = useState<Batchmate[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [reportType, setReportType] = useState<ReportType>("field")
   const [selectedFields, setSelectedFields] = useState<string[]>([])
   const [selectedCountry, setSelectedCountry] = useState<string>("all")
   const [showPreview, setShowPreview] = useState(false)
 
+  // Fetch batchmates from API
+  useEffect(() => {
+    const fetchBatchmates = async () => {
+      try {
+        setIsLoading(true)
+        const data = await batchmateService.getAll()
+        setBatchmates(data)
+      } catch (error) {
+        console.error("Error fetching batchmates:", error)
+        sonnerToast.error("Failed to load data for reports")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBatchmates()
+  }, [])
+
   const accessibleFields =
     user?.role === "super_admin" ? ENGINEERING_FIELDS : user?.assignedField ? [user.assignedField] : []
 
   const accessibleBatchmates =
-    user?.role === "super_admin" ? mockBatchmates : mockBatchmates.filter((b) => b.field === user?.assignedField)
+    user?.role === "super_admin" ? batchmates : batchmates.filter((b) => b.field === user?.assignedField)
 
   const availableCountries = useMemo(() => {
     return [...new Set(accessibleBatchmates.map((b) => b.country).filter(Boolean))].sort() as string[]
@@ -60,15 +79,13 @@ export default function ReportsPage() {
   }
 
   const handleExport = (format: "excel" | "pdf") => {
-    toast({
-      title: `Exporting to ${format.toUpperCase()}`,
+    sonnerToast.success(`Exporting to ${format.toUpperCase()}`, {
       description: `Your report with ${reportData.length} records is being generated...`,
     })
 
     // Simulate export
     setTimeout(() => {
-      toast({
-        title: "Export Complete",
+      sonnerToast.success("Export Complete", {
         description: `Report has been downloaded successfully.`,
       })
     }, 2000)
@@ -78,19 +95,21 @@ export default function ReportsPage() {
     setShowPreview(true)
   }
 
-  // Stats
-  const fieldStats = accessibleFields.map((field) => ({
-    field,
-    count: accessibleBatchmates.filter((b) => b.field === field).length,
-  }))
+  // Stats - only show fields that have data
+  const fieldStats = accessibleFields
+    .map((field) => ({
+      field,
+      count: accessibleBatchmates.filter((b) => b.field === field).length,
+    }))
+    .filter(stat => stat.count > 0)
 
   const countryStats = availableCountries
-    .slice(0, 10)
     .map((country) => ({
       country,
       count: accessibleBatchmates.filter((b) => b.country === country).length,
     }))
     .sort((a, b) => b.count - a.count)
+    .slice(0, 10)
 
   return (
     <div className="space-y-6">
@@ -123,21 +142,25 @@ export default function ReportsPage() {
                 <TabsContent value="field" className="mt-4 space-y-4">
                   <p className="text-sm text-muted-foreground">Select one or more fields to include in the report:</p>
                   <div className="space-y-3">
-                    {accessibleFields.map((field) => (
-                      <div key={field} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`field-${field}`}
-                          checked={selectedFields.includes(field)}
-                          onCheckedChange={() => handleFieldToggle(field)}
-                        />
-                        <Label htmlFor={`field-${field}`} className="flex-1 cursor-pointer">
-                          {field}
-                        </Label>
-                        <Badge variant="outline" className="text-xs">
-                          {accessibleBatchmates.filter((b) => b.field === field).length}
-                        </Badge>
-                      </div>
-                    ))}
+                    {isLoading ? (
+                      <p className="text-sm text-muted-foreground">Loading fields...</p>
+                    ) : (
+                      accessibleFields.map((field) => (
+                        <div key={field} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`field-${field}`}
+                            checked={selectedFields.includes(field)}
+                            onCheckedChange={() => handleFieldToggle(field)}
+                          />
+                          <Label htmlFor={`field-${field}`} className="flex-1 cursor-pointer">
+                            {field}
+                          </Label>
+                          <Badge variant="outline" className="text-xs">
+                            {accessibleBatchmates.filter((b) => b.field === field).length}
+                          </Badge>
+                        </div>
+                      ))
+                    )}
                   </div>
                   {selectedFields.length === 0 && (
                     <p className="text-xs text-muted-foreground">No fields selected — all fields will be included</p>
@@ -209,18 +232,24 @@ export default function ReportsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {fieldStats.map((stat) => (
-                    <div key={stat.field} className="flex items-center gap-2">
-                      <div className="w-20 text-xs text-muted-foreground truncate">{stat.field}</div>
-                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary rounded-full"
-                          style={{ width: `${(stat.count / Math.max(...fieldStats.map((s) => s.count))) * 100}%` }}
-                        />
+                  {isLoading ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+                  ) : fieldStats.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">No data available</p>
+                  ) : (
+                    fieldStats.map((stat) => (
+                      <div key={stat.field} className="flex items-center gap-2">
+                        <div className="w-32 text-xs text-muted-foreground truncate">{stat.field}</div>
+                        <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full"
+                            style={{ width: `${(stat.count / Math.max(...fieldStats.map((s) => s.count))) * 100}%` }}
+                          />
+                        </div>
+                        <div className="w-6 text-xs font-medium text-right">{stat.count}</div>
                       </div>
-                      <div className="w-6 text-xs font-medium text-right">{stat.count}</div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -234,18 +263,24 @@ export default function ReportsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {countryStats.map((stat) => (
-                    <div key={stat.country} className="flex items-center gap-2">
-                      <div className="w-20 text-xs text-muted-foreground truncate">{stat.country}</div>
-                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-accent rounded-full"
-                          style={{ width: `${(stat.count / Math.max(...countryStats.map((s) => s.count))) * 100}%` }}
-                        />
+                  {isLoading ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+                  ) : countryStats.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">No data available</p>
+                  ) : (
+                    countryStats.map((stat) => (
+                      <div key={stat.country} className="flex items-center gap-2">
+                        <div className="w-32 text-xs text-muted-foreground truncate">{stat.country}</div>
+                        <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-accent rounded-full"
+                            style={{ width: `${(stat.count / Math.max(...countryStats.map((s) => s.count))) * 100}%` }}
+                          />
+                        </div>
+                        <div className="w-6 text-xs font-medium text-right">{stat.count}</div>
                       </div>
-                      <div className="w-6 text-xs font-medium text-right">{stat.count}</div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -285,7 +320,20 @@ export default function ReportsPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {reportData.slice(0, 20).map((batchmate) => (
+                        {isLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="h-32 text-center">
+                              <p className="text-muted-foreground">Loading report data...</p>
+                            </TableCell>
+                          </TableRow>
+                        ) : reportData.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="h-32 text-center">
+                              <p className="text-muted-foreground">No data available for preview</p>
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          reportData.slice(0, 20).map((batchmate) => (
                           <TableRow key={batchmate.id} className="hover:bg-secondary/20">
                             <TableCell className="font-medium">{batchmate.fullName}</TableCell>
                             <TableCell>{batchmate.callingName}</TableCell>
@@ -299,7 +347,8 @@ export default function ReportsPage() {
                             <TableCell>{batchmate.country || "—"}</TableCell>
                             <TableCell>{batchmate.workingPlace || "—"}</TableCell>
                           </TableRow>
-                        ))}
+                        ))
+                        )}
                       </TableBody>
                     </Table>
                   </div>

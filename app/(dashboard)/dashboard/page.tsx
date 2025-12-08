@@ -1,36 +1,63 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
-import { mockBatchmates } from "@/lib/mock-data"
-import { ENGINEERING_FIELDS } from "@/lib/types"
+import { batchmateService } from "@/lib/api/services/batchmate.service"
+import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, UserCheck, Globe, Building2, TrendingUp, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [batchmates, setBatchmates] = useState<Batchmate[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch batchmates from API
+  useEffect(() => {
+    const fetchBatchmates = async () => {
+      try {
+        setIsLoading(true)
+        const data = await batchmateService.getAll()
+        setBatchmates(data)
+      } catch (error) {
+        console.error("Error fetching batchmates:", error)
+        toast.error("Failed to load dashboard data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBatchmates()
+  }, [])
 
   // Filter batchmates based on user role
   const accessibleBatchmates =
-    user?.role === "super_admin" ? mockBatchmates : mockBatchmates.filter((b) => b.field === user?.assignedField)
+    user?.role === "super_admin" ? batchmates : batchmates.filter((b) => b.field === user?.assignedField)
 
   // Calculate stats
   const totalAlumni = accessibleBatchmates.length
   const countriesCount = new Set(accessibleBatchmates.map((b) => b.country).filter(Boolean)).size
   const workplacesCount = new Set(accessibleBatchmates.map((b) => b.workingPlace).filter(Boolean)).size
 
+  // Get active fields count (fields that have at least one batchmate)
+  const activeFieldsCount = new Set(batchmates.map((b) => b.field)).size
+
   const fieldStats = ENGINEERING_FIELDS.map((field) => ({
     field,
-    count: mockBatchmates.filter((b) => b.field === field).length,
-  }))
+    count: batchmates.filter((b) => b.field === field).length,
+  })).filter(stat => stat.count > 0) // Only show fields with data
 
-  const recentBatchmates = accessibleBatchmates.slice(0, 5)
+  const recentBatchmates = accessibleBatchmates
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5)
 
   const stats = [
     {
       title: "Total Alumni",
-      value: totalAlumni,
+      value: isLoading ? "..." : totalAlumni,
       description: user?.role === "super_admin" ? "Across all fields" : `In ${user?.assignedField}`,
       icon: Users,
       color: "text-primary",
@@ -38,7 +65,7 @@ export default function DashboardPage() {
     },
     {
       title: "Active Fields",
-      value: user?.role === "super_admin" ? 9 : 1,
+      value: isLoading ? "..." : (user?.role === "super_admin" ? activeFieldsCount : 1),
       description: "Engineering branches",
       icon: UserCheck,
       color: "text-accent",
@@ -46,7 +73,7 @@ export default function DashboardPage() {
     },
     {
       title: "Countries",
-      value: countriesCount,
+      value: isLoading ? "..." : countriesCount,
       description: "Global presence",
       icon: Globe,
       color: "text-chart-3",
@@ -54,7 +81,7 @@ export default function DashboardPage() {
     },
     {
       title: "Workplaces",
-      value: workplacesCount,
+      value: isLoading ? "..." : workplacesCount,
       description: "Organizations",
       icon: Building2,
       color: "text-chart-4",
@@ -94,18 +121,24 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {fieldStats.map((stat) => (
-                  <div key={stat.field} className="flex items-center gap-3">
-                    <div className="w-24 text-sm text-muted-foreground">{stat.field}</div>
-                    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${(stat.count / Math.max(...fieldStats.map((s) => s.count))) * 100}%` }}
-                      />
+                {isLoading ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">Loading field distribution...</p>
+                ) : fieldStats.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No data available</p>
+                ) : (
+                  fieldStats.map((stat) => (
+                    <div key={stat.field} className="flex items-center gap-3">
+                      <div className="w-32 text-sm text-muted-foreground truncate">{stat.field}</div>
+                      <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${(stat.count / Math.max(...fieldStats.map((s) => s.count))) * 100}%` }}
+                        />
+                      </div>
+                      <div className="w-8 text-sm font-medium text-right">{stat.count}</div>
                     </div>
-                    <div className="w-8 text-sm font-medium text-right">{stat.count}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -127,20 +160,26 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentBatchmates.map((batchmate) => (
-                <div key={batchmate.id} className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary">{batchmate.callingName.charAt(0)}</span>
+              {isLoading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Loading recent alumni...</p>
+              ) : recentBatchmates.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No alumni added yet</p>
+              ) : (
+                recentBatchmates.map((batchmate) => (
+                  <div key={batchmate.id} className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-sm font-medium text-primary">{batchmate.callingName.charAt(0)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{batchmate.fullName}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {batchmate.field} • {batchmate.country || "Unknown location"}
+                      </p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{batchmate.workingPlace || "N/A"}</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{batchmate.fullName}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {batchmate.field} • {batchmate.country || "Unknown location"}
-                    </p>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{batchmate.workingPlace || "N/A"}</div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

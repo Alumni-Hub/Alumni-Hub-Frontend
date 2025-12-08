@@ -1,26 +1,32 @@
 export type UserRole = "super_admin" | "field_admin"
 
 export type EngineeringField =
-  | "Chemical"
-  | "Civil"
-  | "Computer"
-  | "Electrical"
-  | "Electronics"
-  | "Material"
-  | "Mechanical"
-  | "Mining"
-  | "Textile"
+  | "Computer Engineering"
+  | "Electrical Engineering"
+  | "Mechanical Engineering"
+  | "Civil Engineering"
+  | "Chemical Engineering"
+  | "Biomedical Engineering"
+  | "Industrial Engineering"
+  | "Environmental Engineering"
+  | "Aerospace Engineering"
+  | "Software Engineering"
+  | "Data Science"
+  | "Artificial Intelligence"
 
 export const ENGINEERING_FIELDS: EngineeringField[] = [
-  "Chemical",
-  "Civil",
-  "Computer",
-  "Electrical",
-  "Electronics",
-  "Material",
-  "Mechanical",
-  "Mining",
-  "Textile",
+  "Computer Engineering",
+  "Electrical Engineering",
+  "Mechanical Engineering",
+  "Civil Engineering",
+  "Chemical Engineering",
+  "Biomedical Engineering",
+  "Industrial Engineering",
+  "Environmental Engineering",
+  "Aerospace Engineering",
+  "Software Engineering",
+  "Data Science",
+  "Artificial Intelligence",
 ]
 
 export interface User {

@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
-import { mockBatchmates } from "@/lib/mock-data"
-import { ENGINEERING_FIELDS } from "@/lib/types"
+import { batchmateService } from "@/lib/api/services/batchmate.service"
+import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,9 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Edit, X, Filter } from "lucide-react"
+import { toast } from "sonner"
 
 export default function FullViewPage() {
   const { user } = useAuth()
+  const [batchmates, setBatchmates] = useState<Batchmate[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [activeField, setActiveField] = useState<string>(
     user?.role === "field_admin" && user.assignedField ? user.assignedField : ENGINEERING_FIELDS[0],
   )
@@ -28,11 +31,29 @@ export default function FullViewPage() {
     workingPlace: "",
   })
 
+  // Fetch batchmates from API
+  useEffect(() => {
+    const fetchBatchmates = async () => {
+      try {
+        setIsLoading(true)
+        const data = await batchmateService.getAll()
+        setBatchmates(data)
+      } catch (error) {
+        console.error("Error fetching batchmates:", error)
+        toast.error("Failed to load batchmates")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBatchmates()
+  }, [])
+
   const availableFields =
     user?.role === "super_admin" ? ENGINEERING_FIELDS : user?.assignedField ? [user.assignedField] : []
 
   const filteredBatchmates = useMemo(() => {
-    let result = mockBatchmates.filter((b) => b.field === activeField)
+    let result = batchmates.filter((b) => b.field === activeField)
 
     if (filters.callingName) {
       result = result.filter((b) => b.callingName.toLowerCase().includes(filters.callingName.toLowerCase()))
@@ -51,15 +72,15 @@ export default function FullViewPage() {
     }
 
     return result
-  }, [activeField, filters])
+  }, [batchmates, activeField, filters])
 
   const availableCountries = useMemo(() => {
-    const countriesInField = mockBatchmates
+    const countriesInField = batchmates
       .filter((b) => b.field === activeField)
       .map((b) => b.country)
       .filter(Boolean)
     return [...new Set(countriesInField)].sort() as string[]
-  }, [activeField])
+  }, [batchmates, activeField])
 
   const clearFilters = () => {
     setFilters({
@@ -88,18 +109,21 @@ export default function FullViewPage() {
       <Tabs value={activeField} onValueChange={setActiveField}>
         <div className="overflow-x-auto pb-2">
           <TabsList className="bg-secondary/50 p-1 h-auto flex-wrap gap-1 w-max min-w-full">
-            {availableFields.map((field) => (
-              <TabsTrigger
-                key={field}
-                value={field}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
-              >
-                {field}
-                <Badge variant="outline" className="ml-2 h-5 px-1.5 text-xs border-current">
-                  {mockBatchmates.filter((b) => b.field === field).length}
-                </Badge>
-              </TabsTrigger>
-            ))}
+            {availableFields.map((field) => {
+              const fieldCount = batchmates.filter((b) => b.field === field).length
+              return (
+                <TabsTrigger
+                  key={field}
+                  value={field}
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
+                >
+                  {field}
+                  <Badge variant="outline" className="ml-2 h-5 px-1.5 text-xs border-current">
+                    {isLoading ? "..." : fieldCount}
+                  </Badge>
+                </TabsTrigger>
+              )
+            })}
           </TabsList>
         </div>
 
@@ -191,7 +215,13 @@ export default function FullViewPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredBatchmates.length === 0 ? (
+                        {isLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={canEdit ? 5 : 4} className="h-32 text-center">
+                              <p className="text-muted-foreground">Loading batchmates...</p>
+                            </TableCell>
+                          </TableRow>
+                        ) : filteredBatchmates.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={canEdit ? 5 : 4} className="h-32 text-center">
                               <p className="text-muted-foreground">No batchmates found matching filters</p>
@@ -240,7 +270,7 @@ export default function FullViewPage() {
                 </div>
 
                 <div className="mt-4 text-sm text-muted-foreground">
-                  Showing {filteredBatchmates.length} of {mockBatchmates.filter((b) => b.field === activeField).length}{" "}
+                  Showing {filteredBatchmates.length} of {batchmates.filter((b) => b.field === activeField).length}{" "}
                   records in {activeField} field
                 </div>
               </CardContent>

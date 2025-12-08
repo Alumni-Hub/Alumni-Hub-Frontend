@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
-import { mockBatchmates } from "@/lib/mock-data"
-import { ENGINEERING_FIELDS } from "@/lib/types"
+import { batchmateService } from "@/lib/api/services/batchmate.service"
+import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -13,17 +13,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Search, Plus, MoreHorizontal, Edit, Trash2, Eye, Filter, X } from "lucide-react"
+import { toast } from "sonner"
 
 export default function BatchmatesPage() {
   const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [fieldFilter, setFieldFilter] = useState<string>("all")
   const [countryFilter, setCountryFilter] = useState<string>("all")
+  const [batchmates, setBatchmates] = useState<Batchmate[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch batchmates from API
+  useEffect(() => {
+    const fetchBatchmates = async () => {
+      try {
+        setIsLoading(true)
+        const data = await batchmateService.getAll()
+        setBatchmates(data)
+      } catch (error) {
+        console.error("Error fetching batchmates:", error)
+        toast.error("Failed to load batchmates")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBatchmates()
+  }, [])
 
   // Filter batchmates based on user role and filters
   const filteredBatchmates = useMemo(() => {
     let result =
-      user?.role === "super_admin" ? mockBatchmates : mockBatchmates.filter((b) => b.field === user?.assignedField)
+      user?.role === "super_admin" ? batchmates : batchmates.filter((b) => b.field === user?.assignedField)
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
@@ -45,11 +66,11 @@ export default function BatchmatesPage() {
     }
 
     return result
-  }, [user, searchTerm, fieldFilter, countryFilter])
+  }, [user, batchmates, searchTerm, fieldFilter, countryFilter])
 
   const availableCountries = useMemo(() => {
-    return [...new Set(mockBatchmates.map((b) => b.country).filter(Boolean))].sort() as string[]
-  }, [])
+    return [...new Set(batchmates.map((b) => b.country).filter(Boolean))].sort() as string[]
+  }, [batchmates])
 
   const clearFilters = () => {
     setSearchTerm("")
@@ -146,7 +167,13 @@ export default function BatchmatesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredBatchmates.length === 0 ? (
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center">
+                        <p className="text-muted-foreground">Loading batchmates...</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredBatchmates.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-32 text-center">
                         <p className="text-muted-foreground">No batchmates found</p>
