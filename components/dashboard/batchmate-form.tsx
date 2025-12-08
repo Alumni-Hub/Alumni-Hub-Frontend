@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { type Batchmate, ENGINEERING_FIELDS, COUNTRIES } from "@/lib/types"
+import { batchmateService } from "@/lib/api/services/batchmate.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Upload } from "lucide-react"
+import { toast as sonnerToast } from "sonner"
 
 interface BatchmateFormProps {
   initialData?: Batchmate
@@ -63,15 +65,30 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
 
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      if (initialData) {
+        // Update existing batchmate
+        await batchmateService.update(initialData.id, formData)
+        sonnerToast.success("Batchmate updated", {
+          description: `${formData.fullName} has been updated successfully.`,
+        })
+      } else {
+        // Create new batchmate
+        await batchmateService.create(formData)
+        sonnerToast.success("Batchmate created", {
+          description: `${formData.fullName} has been added successfully.`,
+        })
+      }
 
-    toast({
-      title: initialData ? "Batchmate updated" : "Batchmate created",
-      description: `${formData.fullName} has been ${initialData ? "updated" : "added"} successfully.`,
-    })
-
-    router.push("/dashboard/batchmates")
+      router.push("/dashboard/batchmates")
+    } catch (error: any) {
+      console.error("Error saving batchmate:", error)
+      sonnerToast.error("Error", {
+        description: error.response?.data?.error?.message || "Failed to save batchmate. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleChange = (field: string, value: string) => {
