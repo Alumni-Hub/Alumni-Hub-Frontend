@@ -5,8 +5,10 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { useNotifications } from "@/lib/notification-context"
 import { type Batchmate, ENGINEERING_FIELDS, COUNTRIES } from "@/lib/types"
 import { batchmateService } from "@/lib/api/services/batchmate.service"
+import { notificationHelpers } from "@/lib/notification-helpers"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,6 +27,7 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
   const { user } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshNotifications } = useNotifications()
   const [isLoading, setIsLoading] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -71,12 +74,22 @@ export function BatchmateForm({ initialData }: BatchmateFormProps) {
         // Update existing batchmate - use documentId for Strapi v5
         const idToUse = initialData.documentId || initialData.id
         await batchmateService.update(idToUse, formData)
+        
+        // Trigger notification for update
+        await notificationHelpers.notifyBatchmateUpdate(formData.fullName)
+        refreshNotifications()
+        
         sonnerToast.success("Batchmate updated", {
           description: `${formData.fullName} has been updated successfully.`,
         })
       } else {
         // Create new batchmate
         await batchmateService.create(formData)
+        
+        // Trigger notification for new batchmate
+        await notificationHelpers.notifyNewBatchmate(formData.fullName, formData.field)
+        refreshNotifications()
+        
         sonnerToast.success("Batchmate created", {
           description: `${formData.fullName} has been added successfully.`,
         })

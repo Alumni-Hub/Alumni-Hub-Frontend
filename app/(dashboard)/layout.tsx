@@ -5,6 +5,7 @@ import type React from "react"
 import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { AuthProvider, useAuth } from "@/lib/auth-context"
+import { NotificationProvider } from "@/lib/notification-context"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { Loader2 } from "lucide-react"
@@ -49,7 +50,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      <NotificationProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </NotificationProvider>
     </AuthProvider>
   )
 }
