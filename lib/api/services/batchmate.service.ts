@@ -28,7 +28,12 @@ export interface BatchmateFilters {
 
 export const batchmateService = {
   async getAll(filters?: BatchmateFilters) {
-    const params: any = { populate: ["universityPhoto", "currentPhoto"] }
+    const params: any = { 
+      populate: ["universityPhoto", "currentPhoto"],
+      pagination: {
+        pageSize: 5000 // Get up to 5000 records
+      }
+    }
     
     if (filters) {
       const filterObj: any = {}
