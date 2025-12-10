@@ -180,7 +180,7 @@ export default function BatchmatesPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredBatchmates.slice(0, 20).map((batchmate) => (
+                    filteredBatchmates.map((batchmate) => (
                       <TableRow key={batchmate.id} className="hover:bg-secondary/20">
                         <TableCell>
                             <div className="flex items-center gap-3">
@@ -244,10 +244,10 @@ export default function BatchmatesPage() {
             </div>
           </div>
 
-          {filteredBatchmates.length > 20 && (
+          {filteredBatchmates.length > 0 && (
             <div className="mt-4 text-center">
               <p className="text-sm text-muted-foreground">
-                Showing 20 of {filteredBatchmates.length} records. Use filters to narrow down results.
+                Showing all {filteredBatchmates.length} records.
               </p>
             </div>
           )}

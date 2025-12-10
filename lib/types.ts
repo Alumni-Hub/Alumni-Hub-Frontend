@@ -3,9 +3,13 @@ export type UserRole = "super_admin" | "field_admin"
 export type EngineeringField =
   | "Computer Engineering"
   | "Electrical Engineering"
+  | "Electronics Engineering"
   | "Mechanical Engineering"
   | "Civil Engineering"
   | "Chemical Engineering"
+  | "Material Engineering"
+  | "Mining Engineering"
+  | "Textile Engineering"
   | "Biomedical Engineering"
   | "Industrial Engineering"
   | "Environmental Engineering"
@@ -15,11 +19,15 @@ export type EngineeringField =
   | "Artificial Intelligence"
 
 export const ENGINEERING_FIELDS: EngineeringField[] = [
+  "Chemical Engineering",
+  "Civil Engineering",
   "Computer Engineering",
   "Electrical Engineering",
+  "Electronics Engineering",
+  "Material Engineering",
   "Mechanical Engineering",
-  "Civil Engineering",
-  "Chemical Engineering",
+  "Mining Engineering",
+  "Textile Engineering",
   "Biomedical Engineering",
   "Industrial Engineering",
   "Environmental Engineering",
