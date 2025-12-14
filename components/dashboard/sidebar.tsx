@@ -19,12 +19,14 @@ import {
   Layers,
   Menu,
   ChevronRight,
+  Upload,
 } from "lucide-react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Batchmates", href: "/dashboard/batchmates", icon: Users },
   { name: "Add Batchmate", href: "/dashboard/batchmates/new", icon: UserPlus },
+  { name: "Bulk Import", href: "/dashboard/bulk-import", icon: Upload },
   { name: "Full View", href: "/dashboard/full-view", icon: Layers },
   { name: "Global Search", href: "/dashboard/search", icon: Search },
   { name: "Reports", href: "/dashboard/reports", icon: FileText },

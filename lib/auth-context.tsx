@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Mock users for demo
     const mockCredentials: Record<string, { password: string; user: User }> = {
       "superadmin@alumni.com": {
-        password: "admin123",
+        password: "SLTdigitalPlatforms2025@",
         user: {
           id: "1",
           email: "superadmin@alumni.com",

@@ -120,20 +120,6 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Demo credentials */}
-            <div className="mt-6 pt-4 border-t border-border">
-              <p className="text-xs text-muted-foreground text-center mb-3">Demo Credentials</p>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center p-2 rounded-lg bg-secondary/50">
-                  <span className="text-muted-foreground">Super Admin:</span>
-                  <code className="text-accent">superadmin@alumni.com / admin123</code>
-                </div>
-                <div className="flex justify-between items-center p-2 rounded-lg bg-secondary/50">
-                  <span className="text-muted-foreground">Field Admin:</span>
-                  <code className="text-accent">computeradmin@alumni.com / admin123</code>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
