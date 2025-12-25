@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Search, Plus, MoreHorizontal, Edit, Trash2, Eye, Filter, X } from "lucide-react"
+import { Search, Plus, MoreHorizontal, Edit, Trash2, Eye, Filter, X, Users, UserCheck } from "lucide-react"
 import { toast } from "sonner"
 
 export default function BatchmatesPage() {
@@ -40,6 +40,38 @@ export default function BatchmatesPage() {
 
     fetchBatchmates()
   }, [])
+
+  // Handle attendance update
+  const handleAttendanceChange = async (batchmateId: string, attendance: "Present" | "Absent") => {
+    try {
+      await batchmateService.update(batchmateId, { attendance })
+      setBatchmates(prevBatchmates =>
+        prevBatchmates.map(b =>
+          (b.documentId || b.id) === batchmateId ? { ...b, attendance } : b
+        )
+      )
+      toast.success(`Attendance marked as ${attendance}`)
+    } catch (error) {
+      console.error("Error updating attendance:", error)
+      toast.error("Failed to update attendance")
+    }
+  }
+
+  // Handle phone confirmation update
+  const handlePhoneConfirmationChange = async (batchmateId: string, phoneConfirmation: "Yes" | "No") => {
+    try {
+      await batchmateService.update(batchmateId, { phoneConfirmation })
+      setBatchmates(prevBatchmates =>
+        prevBatchmates.map(b =>
+          (b.documentId || b.id) === batchmateId ? { ...b, phoneConfirmation } : b
+        )
+      )
+      toast.success(`Phone confirmation marked as ${phoneConfirmation}`)
+    } catch (error) {
+      console.error("Error updating phone confirmation:", error)
+      toast.error("Failed to update phone confirmation")
+    }
+  }
 
   // Filter batchmates based on user role and filters
   const filteredBatchmates = useMemo(() => {
@@ -80,6 +112,20 @@ export default function BatchmatesPage() {
 
   const hasFilters = searchTerm || fieldFilter !== "all" || countryFilter !== "all"
 
+  // Calculate attendance statistics
+  const attendanceStats = useMemo(() => {
+    const stats = {
+      total: filteredBatchmates.length,
+      phoneConfirmedYes: filteredBatchmates.filter(b => b.phoneConfirmation === "Yes").length,
+      phoneConfirmedNo: filteredBatchmates.filter(b => b.phoneConfirmation === "No").length,
+      phoneNotMarked: filteredBatchmates.filter(b => !b.phoneConfirmation).length,
+      present: filteredBatchmates.filter(b => b.attendance === "Present").length,
+      absent: filteredBatchmates.filter(b => b.attendance === "Absent").length,
+      notMarked: filteredBatchmates.filter(b => !b.attendance).length,
+    }
+    return stats
+  }, [filteredBatchmates])
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -95,6 +141,107 @@ export default function BatchmatesPage() {
             Add Batchmate
           </Link>
         </Button>
+      </div>
+
+      {/* Attendance Statistics */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{attendanceStats.total}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Phone: Yes</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{attendanceStats.phoneConfirmedYes}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Phone: No</p>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{attendanceStats.phoneConfirmedNo}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <X className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Not Called</p>
+                <p className="text-2xl font-bold text-muted-foreground">{attendanceStats.phoneNotMarked}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Present</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{attendanceStats.present}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Absent</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{attendanceStats.absent}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <X className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Not Marked</p>
+                <p className="text-2xl font-bold text-muted-foreground">{attendanceStats.notMarked}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="bg-card border-border">
@@ -163,19 +310,21 @@ export default function BatchmatesPage() {
                     <TableHead className="font-semibold">Field</TableHead>
                     <TableHead className="font-semibold">Country</TableHead>
                     <TableHead className="font-semibold">Workplace</TableHead>
+                    <TableHead className="font-semibold">Phone Confirm</TableHead>
+                    <TableHead className="font-semibold">Attendance</TableHead>
                     <TableHead className="text-right font-semibold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-32 text-center">
+                      <TableCell colSpan={8} className="h-32 text-center">
                         <p className="text-muted-foreground">Loading batchmates...</p>
                       </TableCell>
                     </TableRow>
                   ) : filteredBatchmates.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-32 text-center">
+                      <TableCell colSpan={8} className="h-32 text-center">
                         <p className="text-muted-foreground">No batchmates found</p>
                       </TableCell>
                     </TableRow>
@@ -209,6 +358,46 @@ export default function BatchmatesPage() {
                         </TableCell>
                         <TableCell className="text-muted-foreground">{batchmate.country || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{batchmate.workingPlace || "—"}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={batchmate.phoneConfirmation || ""}
+                            onValueChange={(value: "Yes" | "No") => 
+                              handlePhoneConfirmationChange(batchmate.documentId || batchmate.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[110px] bg-input border-border">
+                              <SelectValue placeholder="Confirm..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover border-border">
+                              <SelectItem value="Yes">
+                                <span className="text-blue-600 dark:text-blue-400">Yes</span>
+                              </SelectItem>
+                              <SelectItem value="No">
+                                <span className="text-orange-600 dark:text-orange-400">No</span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={batchmate.attendance || ""}
+                            onValueChange={(value: "Present" | "Absent") => 
+                              handleAttendanceChange(batchmate.documentId || batchmate.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[110px] bg-input border-border">
+                              <SelectValue placeholder="Mark..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover border-border">
+                              <SelectItem value="Present">
+                                <span className="text-green-600 dark:text-green-400">Present</span>
+                              </SelectItem>
+                              <SelectItem value="Absent">
+                                <span className="text-red-600 dark:text-red-400">Absent</span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
