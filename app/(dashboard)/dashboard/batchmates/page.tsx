@@ -57,6 +57,22 @@ export default function BatchmatesPage() {
     }
   }
 
+  // Handle phone confirmation update
+  const handlePhoneConfirmationChange = async (batchmateId: string, phoneConfirmation: "Yes" | "No") => {
+    try {
+      await batchmateService.update(batchmateId, { phoneConfirmation })
+      setBatchmates(prevBatchmates =>
+        prevBatchmates.map(b =>
+          (b.documentId || b.id) === batchmateId ? { ...b, phoneConfirmation } : b
+        )
+      )
+      toast.success(`Phone confirmation marked as ${phoneConfirmation}`)
+    } catch (error) {
+      console.error("Error updating phone confirmation:", error)
+      toast.error("Failed to update phone confirmation")
+    }
+  }
+
   // Filter batchmates based on user role and filters
   const filteredBatchmates = useMemo(() => {
     let result =
@@ -100,6 +116,9 @@ export default function BatchmatesPage() {
   const attendanceStats = useMemo(() => {
     const stats = {
       total: filteredBatchmates.length,
+      phoneConfirmedYes: filteredBatchmates.filter(b => b.phoneConfirmation === "Yes").length,
+      phoneConfirmedNo: filteredBatchmates.filter(b => b.phoneConfirmation === "No").length,
+      phoneNotMarked: filteredBatchmates.filter(b => !b.phoneConfirmation).length,
       present: filteredBatchmates.filter(b => b.attendance === "Present").length,
       absent: filteredBatchmates.filter(b => b.attendance === "Absent").length,
       notMarked: filteredBatchmates.filter(b => !b.attendance).length,
@@ -125,7 +144,7 @@ export default function BatchmatesPage() {
       </div>
 
       {/* Attendance Statistics */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
         <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -135,6 +154,48 @@ export default function BatchmatesPage() {
               </div>
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <Users className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Phone: Yes</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{attendanceStats.phoneConfirmedYes}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Phone: No</p>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{attendanceStats.phoneConfirmedNo}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <X className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Not Called</p>
+                <p className="text-2xl font-bold text-muted-foreground">{attendanceStats.phoneNotMarked}</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardContent>
@@ -249,6 +310,7 @@ export default function BatchmatesPage() {
                     <TableHead className="font-semibold">Field</TableHead>
                     <TableHead className="font-semibold">Country</TableHead>
                     <TableHead className="font-semibold">Workplace</TableHead>
+                    <TableHead className="font-semibold">Phone Confirm</TableHead>
                     <TableHead className="font-semibold">Attendance</TableHead>
                     <TableHead className="text-right font-semibold">Actions</TableHead>
                   </TableRow>
@@ -256,13 +318,13 @@ export default function BatchmatesPage() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-32 text-center">
+                      <TableCell colSpan={8} className="h-32 text-center">
                         <p className="text-muted-foreground">Loading batchmates...</p>
                       </TableCell>
                     </TableRow>
                   ) : filteredBatchmates.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-32 text-center">
+                      <TableCell colSpan={8} className="h-32 text-center">
                         <p className="text-muted-foreground">No batchmates found</p>
                       </TableCell>
                     </TableRow>
@@ -296,6 +358,26 @@ export default function BatchmatesPage() {
                         </TableCell>
                         <TableCell className="text-muted-foreground">{batchmate.country || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{batchmate.workingPlace || "—"}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={batchmate.phoneConfirmation || ""}
+                            onValueChange={(value: "Yes" | "No") => 
+                              handlePhoneConfirmationChange(batchmate.documentId || batchmate.id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[110px] bg-input border-border">
+                              <SelectValue placeholder="Confirm..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover border-border">
+                              <SelectItem value="Yes">
+                                <span className="text-blue-600 dark:text-blue-400">Yes</span>
+                              </SelectItem>
+                              <SelectItem value="No">
+                                <span className="text-orange-600 dark:text-orange-400">No</span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
                         <TableCell>
                           <Select
                             value={batchmate.attendance || ""}
