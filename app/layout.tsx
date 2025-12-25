@@ -9,9 +9,14 @@ const inter = Inter({ subsets: ["latin"] })
 const geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Alumni Hub - Engineering Batchmates Network",
+  title: "93/94 Batch of University of Moratuwa",
   description: "Manage and connect with engineering alumni across 9 fields",
-    generator: 'v0.app'
+  generator: 'v0.app',
+  icons: {
+    icon: '/Logo.jpeg',
+    shortcut: '/Logo.jpeg',
+    apple: '/Logo.jpeg',
+  }
 }
 
 export default function RootLayout({
@@ -21,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light">
+      <head>
+        <link rel="icon" href="/Logo.jpeg" type="image/jpeg" />
+      </head>
       <body className={`font-sans antialiased`}>
         {children}
         <Toaster />

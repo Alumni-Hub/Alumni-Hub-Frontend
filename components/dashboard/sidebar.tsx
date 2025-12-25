@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
@@ -42,12 +43,12 @@ function SidebarContent() {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-          <GraduationCap className="h-5 w-5 text-primary" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-white">
+          <Image src="/Logo.jpeg" alt="Logo" width={36} height={36} className="object-cover" />
         </div>
         <div>
-          <h2 className="font-semibold text-sidebar-foreground">Alumni Hub</h2>
-          <p className="text-xs text-muted-foreground">Engineering Network</p>
+          <h2 className="font-semibold text-sidebar-foreground">93/94 Batch</h2>
+          <p className="text-xs text-muted-foreground">UoM Engineering</p>
         </div>
       </div>
 
@@ -55,7 +56,11 @@ function SidebarContent() {
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+            // Special handling for Dashboard - only active on exact match
+            const isActive = item.href === "/dashboard" 
+              ? pathname === item.href 
+              : pathname === item.href || pathname.startsWith(item.href + "/")
+            
             return (
               <Link
                 key={item.name}
@@ -63,11 +68,11 @@ function SidebarContent() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className={cn("h-4 w-4", isActive && "text-sidebar-accent-foreground")} />
                 {item.name}
                 {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
               </Link>
@@ -81,7 +86,7 @@ function SidebarContent() {
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Administration</p>
               </div>
               {adminNavigation.map((item) => {
-                const isActive = pathname === item.href
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
                 return (
                   <Link
                     key={item.name}
@@ -89,11 +94,11 @@ function SidebarContent() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                         : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className={cn("h-4 w-4", isActive && "text-sidebar-accent-foreground")} />
                     {item.name}
                     {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
                   </Link>
@@ -138,7 +143,7 @@ export function DashboardSidebar() {
           <VisuallyHidden>
             <SheetTitle>Navigation Menu</SheetTitle>
             <SheetDescription>
-              Main navigation menu for the Alumni Hub dashboard
+              Main navigation menu for the 93/94 Batch of University of Moratuwa dashboard
             </SheetDescription>
           </VisuallyHidden>
           <SidebarContent />

@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -47,11 +48,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative">
         {/* Logo and title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
-            <GraduationCap className="w-8 h-8 text-primary" />
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-white border border-primary/20 mb-4 overflow-hidden">
+            <Image src="/Logo.jpeg" alt="93/94 Batch Logo" width={96} height={96} className="object-cover" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Alumni Hub</h1>
-          <p className="text-muted-foreground mt-2">Engineering Batchmates Network</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">93/94 Batch</h1>
+          <p className="text-muted-foreground mt-2">University of Moratuwa</p>
         </div>
 
         <Card className="border-border/50 bg-card/80 backdrop-blur-sm">
@@ -123,7 +124,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">© 2025 Alumni Hub. All rights reserved.</p>
+        <p className="text-center text-xs text-muted-foreground mt-6">© 2025 93/94 Batch of University of Moratuwa. All rights reserved.</p>
       </div>
     </div>
   )
