@@ -41,7 +41,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       <DashboardSidebar />
       <div className="lg:pl-72">
         <DashboardHeader />
-        <main className="p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="p-3 sm:p-4 md:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   )

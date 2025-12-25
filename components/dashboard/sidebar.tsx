@@ -42,13 +42,13 @@ function SidebarContent() {
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-white">
+      <div className="flex h-14 sm:h-16 items-center gap-2 sm:gap-3 border-b border-sidebar-border px-4 sm:px-6">
+        <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg overflow-hidden bg-white flex-shrink-0">
           <Image src="/Logo.jpeg" alt="Logo" width={36} height={36} className="object-cover" />
         </div>
-        <div>
-          <h2 className="font-semibold text-sidebar-foreground">93/94 Batch</h2>
-          <p className="text-xs text-muted-foreground">UoM Engineering</p>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-semibold text-sm sm:text-base text-sidebar-foreground truncate">93/94 Batch</h2>
+          <p className="text-[10px] sm:text-xs text-muted-foreground truncate">UoM Engineering</p>
         </div>
       </div>
 
@@ -110,14 +110,14 @@ function SidebarContent() {
       </ScrollArea>
 
       {/* User info */}
-      <div className="border-t border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-            <span className="text-sm font-medium text-primary">{user?.username?.charAt(0).toUpperCase()}</span>
+      <div className="border-t border-sidebar-border p-3 sm:p-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-primary/10 flex-shrink-0">
+            <span className="text-xs sm:text-sm font-medium text-primary">{user?.username?.charAt(0).toUpperCase()}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.username}</p>
-            <p className="text-xs text-muted-foreground capitalize">
+            <p className="text-xs sm:text-sm font-medium text-sidebar-foreground truncate">{user?.username}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground capitalize truncate">
               {user?.role === "super_admin" ? "Super Admin" : `${user?.assignedField} Admin`}
             </p>
           </div>
@@ -135,11 +135,11 @@ export function DashboardSidebar() {
       {/* Mobile sidebar */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden fixed top-3 left-3 z-50">
-            <Menu className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="lg:hidden fixed top-2.5 sm:top-3 left-2.5 sm:left-3 z-50 h-8 w-8 sm:h-9 sm:w-9">
+            <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-72 p-0 bg-sidebar border-sidebar-border">
+        <SheetContent side="left" className="w-64 sm:w-72 p-0 bg-sidebar border-sidebar-border">
           <VisuallyHidden>
             <SheetTitle>Navigation Menu</SheetTitle>
             <SheetDescription>
