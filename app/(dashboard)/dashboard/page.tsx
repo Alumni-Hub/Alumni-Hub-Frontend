@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context"
 import { batchmateService } from "@/lib/api/services/batchmate.service"
 import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, UserCheck, Globe, Building2, TrendingUp, ChevronRight } from "lucide-react"
+import { Users, UserCheck, Globe, Building2, TrendingUp, ChevronRight, MoreHorizontal, X } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -53,6 +53,14 @@ export default function DashboardPage() {
   const recentBatchmates = accessibleBatchmates
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5)
+
+  // Calculate attendance statistics
+  const attendanceStats = {
+    total: accessibleBatchmates.length,
+    present: accessibleBatchmates.filter(b => b.attendance === "Present").length,
+    absent: accessibleBatchmates.filter(b => b.attendance === "Absent").length,
+    notMarked: accessibleBatchmates.filter(b => !b.attendance).length,
+  }
 
   const stats = [
     {
@@ -110,6 +118,57 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Attendance Statistics */}
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="text-lg">Attendance Overview</CardTitle>
+          <CardDescription>Current attendance status of batchmates</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{isLoading ? "..." : attendanceStats.total}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+              <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">Present</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{isLoading ? "..." : attendanceStats.present}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20">
+              <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <X className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">Absent</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{isLoading ? "..." : attendanceStats.absent}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
+              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+                <MoreHorizontal className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Not Marked</p>
+                <p className="text-2xl font-bold text-muted-foreground">{isLoading ? "..." : attendanceStats.notMarked}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Field Distribution */}

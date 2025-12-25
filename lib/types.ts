@@ -47,6 +47,7 @@ export interface Batchmate {
   universityPhoto?: string
   currentPhoto?: string
   field: EngineeringField
+  attendance?: "Present" | "Absent"
   createdAt: string
   updatedAt: string
 }
