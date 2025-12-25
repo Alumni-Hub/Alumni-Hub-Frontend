@@ -56,7 +56,11 @@ function SidebarContent() {
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {navigation.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+            // Special handling for Dashboard - only active on exact match
+            const isActive = item.href === "/dashboard" 
+              ? pathname === item.href 
+              : pathname === item.href || pathname.startsWith(item.href + "/")
+            
             return (
               <Link
                 key={item.name}
@@ -64,11 +68,11 @@ function SidebarContent() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className={cn("h-4 w-4", isActive && "text-sidebar-accent-foreground")} />
                 {item.name}
                 {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
               </Link>
@@ -82,7 +86,7 @@ function SidebarContent() {
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Administration</p>
               </div>
               {adminNavigation.map((item) => {
-                const isActive = pathname === item.href
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
                 return (
                   <Link
                     key={item.name}
@@ -90,11 +94,11 @@ function SidebarContent() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
                         : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className={cn("h-4 w-4", isActive && "text-sidebar-accent-foreground")} />
                     {item.name}
                     {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
                   </Link>
