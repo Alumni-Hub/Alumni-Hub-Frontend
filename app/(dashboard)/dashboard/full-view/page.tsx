@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Edit, X, Filter } from "lucide-react"
 import { toast } from "sonner"
@@ -107,25 +106,23 @@ export default function FullViewPage() {
 
       {/* Field Tabs */}
       <Tabs value={activeField} onValueChange={setActiveField}>
-        <div className="overflow-x-auto pb-2">
-          <TabsList className="bg-secondary/50 p-1 h-auto flex-wrap gap-1 w-max min-w-full">
-            {availableFields.map((field) => {
-              const fieldCount = batchmates.filter((b) => b.field === field).length
-              return (
-                <TabsTrigger
-                  key={field}
-                  value={field}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
-                >
-                  {field}
-                  <Badge variant="outline" className="ml-2 h-5 px-1.5 text-xs border-current">
-                    {isLoading ? "..." : fieldCount}
-                  </Badge>
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
-        </div>
+        <TabsList className="bg-secondary/50 p-1 h-auto flex flex-wrap gap-1 w-full justify-start">
+          {availableFields.map((field) => {
+            const fieldCount = batchmates.filter((b) => b.field === field).length
+            return (
+              <TabsTrigger
+                key={field}
+                value={field}
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2 flex-shrink-0"
+              >
+                {field}
+                <Badge variant="outline" className="ml-2 h-5 px-1.5 text-xs border-current">
+                  {isLoading ? "..." : fieldCount}
+                </Badge>
+              </TabsTrigger>
+            )
+          })}
+        </TabsList>
 
         {availableFields.map((field) => (
           <TabsContent key={field} value={field} className="mt-6">
@@ -202,74 +199,86 @@ export default function FullViewPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="rounded-lg border border-border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-secondary/30 hover:bg-secondary/30">
-                          <TableHead className="font-semibold">Name</TableHead>
-                          <TableHead className="font-semibold">Contact</TableHead>
-                          <TableHead className="font-semibold">Country</TableHead>
-                          <TableHead className="font-semibold">Workplace</TableHead>
-                          {canEdit && <TableHead className="text-right font-semibold">Actions</TableHead>}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {isLoading ? (
-                          <TableRow>
-                            <TableCell colSpan={canEdit ? 5 : 4} className="h-32 text-center">
-                              <p className="text-muted-foreground">Loading batchmates...</p>
-                            </TableCell>
-                          </TableRow>
-                        ) : filteredBatchmates.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={canEdit ? 5 : 4} className="h-32 text-center">
-                              <p className="text-muted-foreground">No batchmates found matching filters</p>
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          filteredBatchmates.map((batchmate) => (
-                            <TableRow key={batchmate.id} className="hover:bg-secondary/20">
-                              <TableCell>
-                                <div className="flex items-center gap-3">
-                                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                    <span className="text-sm font-medium text-primary">
-                                      {batchmate.callingName?.charAt(0) || '?'}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <p className="font-medium text-foreground">{batchmate.fullName}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {batchmate.callingName}
-                                      {batchmate.nickName && ` • "${batchmate.nickName}"`}
-                                    </p>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <p className="text-sm">{batchmate.email}</p>
-                                <p className="text-xs text-muted-foreground">{batchmate.whatsappMobile}</p>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">{batchmate.country || "—"}</TableCell>
-                              <TableCell className="text-muted-foreground">{batchmate.workingPlace || "—"}</TableCell>
-                              {canEdit && (
-                                <TableCell className="text-right">
-                                  <Button variant="ghost" size="sm" asChild>
-                                    <Link href={`/dashboard/batchmates/${batchmate.id}/edit`}>
-                                      <Edit className="h-4 w-4" />
-                                    </Link>
-                                  </Button>
-                                </TableCell>
-                              )}
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                <div className="space-y-4">
+                  {isLoading ? (
+                    <div className="py-16 text-center">
+                      <p className="text-muted-foreground">Loading batchmates...</p>
+                    </div>
+                  ) : filteredBatchmates.length === 0 ? (
+                    <div className="py-16 text-center">
+                      <p className="text-muted-foreground">No batchmates found matching filters</p>
+                    </div>
+                  ) : (
+                    filteredBatchmates.map((batchmate) => (
+                      <Card key={batchmate.id} className="bg-secondary/20 border-border hover:bg-secondary/30 transition-colors">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <span className="text-lg font-medium text-primary">
+                                  {batchmate.callingName?.charAt(0) || '?'}
+                                </span>
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-lg text-foreground">{batchmate.fullName}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {batchmate.callingName}
+                                  {batchmate.nickName && ` • "${batchmate.nickName}"`}
+                                </p>
+                              </div>
+                            </div>
+                            {canEdit && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link href={`/dashboard/batchmates/${batchmate.id}/edit`}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</label>
+                              <p className="text-sm text-foreground">{batchmate.email || "—"}</p>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">WhatsApp</label>
+                              <p className="text-sm text-foreground">{batchmate.whatsappMobile || "—"}</p>
+                            </div>
+
+                            {batchmate.mobile && (
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Mobile</label>
+                                <p className="text-sm text-foreground">{batchmate.mobile}</p>
+                              </div>
+                            )}
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Country</label>
+                              <p className="text-sm text-foreground">{batchmate.country || "—"}</p>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Working Place</label>
+                              <p className="text-sm text-foreground">{batchmate.workingPlace || "—"}</p>
+                            </div>
+
+                            {batchmate.address && (
+                              <div className="space-y-1 sm:col-span-2 lg:col-span-3">
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Address</label>
+                                <p className="text-sm text-foreground">{batchmate.address}</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
 
-                <div className="mt-4 text-sm text-muted-foreground">
+                <div className="mt-6 text-sm text-muted-foreground">
                   Showing {filteredBatchmates.length} of {batchmates.filter((b) => b.field === activeField).length}{" "}
                   records in {activeField} field
                 </div>

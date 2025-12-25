@@ -10,13 +10,6 @@ export type EngineeringField =
   | "Material Engineering"
   | "Mining Engineering"
   | "Textile Engineering"
-  | "Biomedical Engineering"
-  | "Industrial Engineering"
-  | "Environmental Engineering"
-  | "Aerospace Engineering"
-  | "Software Engineering"
-  | "Data Science"
-  | "Artificial Intelligence"
 
 export const ENGINEERING_FIELDS: EngineeringField[] = [
   "Chemical Engineering",
@@ -28,13 +21,6 @@ export const ENGINEERING_FIELDS: EngineeringField[] = [
   "Mechanical Engineering",
   "Mining Engineering",
   "Textile Engineering",
-  "Biomedical Engineering",
-  "Industrial Engineering",
-  "Environmental Engineering",
-  "Aerospace Engineering",
-  "Software Engineering",
-  "Data Science",
-  "Artificial Intelligence",
 ]
 
 export interface User {

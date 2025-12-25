@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { batchmateService } from "@/lib/api/services/batchmate.service"
 import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
+import { exportToExcel, exportToPDF } from "@/lib/export-utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -79,17 +80,45 @@ export default function ReportsPage() {
   }
 
   const handleExport = (format: "excel" | "pdf") => {
-    sonnerToast.success(`Exporting to ${format.toUpperCase()}`, {
-      description: `Your report with ${reportData.length} records is being generated...`,
-    })
+    if (reportData.length === 0) {
+      sonnerToast.error("No data to export");
+      return;
+    }
 
-    // Simulate export
-    setTimeout(() => {
+    sonnerToast.info(`Generating ${format.toUpperCase()} report...`, {
+      description: `Processing ${reportData.length} records...`,
+    });
+
+    // Generate filename based on report type
+    let filename = '93-94-batch-report';
+    if (reportType === 'field') {
+      if (selectedFields.length > 0) {
+        filename = `${filename}-${selectedFields.join('-').toLowerCase().replace(/\s+/g, '-')}`;
+      }
+    } else {
+      if (selectedCountry !== 'all') {
+        filename = `${filename}-${selectedCountry.toLowerCase().replace(/\s+/g, '-')}`;
+      }
+    }
+
+    // Export based on format
+    let success = false;
+    if (format === 'excel') {
+      success = exportToExcel(reportData, filename);
+    } else {
+      success = exportToPDF(reportData, filename);
+    }
+
+    if (success) {
       sonnerToast.success("Export Complete", {
-        description: `Report has been downloaded successfully.`,
-      })
-    }, 2000)
-  }
+        description: `Report has been downloaded successfully as ${format.toUpperCase()}.`,
+      });
+    } else {
+      sonnerToast.error("Export Failed", {
+        description: "There was an error generating the report. Please try again.",
+      });
+    }
+  };
 
   const handlePreview = () => {
     setShowPreview(true)

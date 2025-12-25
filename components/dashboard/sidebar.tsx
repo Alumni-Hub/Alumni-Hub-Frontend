@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
@@ -42,12 +43,12 @@ function SidebarContent() {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-          <GraduationCap className="h-5 w-5 text-primary" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg overflow-hidden bg-white">
+          <Image src="/Logo.jpeg" alt="Logo" width={36} height={36} className="object-cover" />
         </div>
         <div>
-          <h2 className="font-semibold text-sidebar-foreground">Alumni Hub</h2>
-          <p className="text-xs text-muted-foreground">Engineering Network</p>
+          <h2 className="font-semibold text-sidebar-foreground">93/94 Batch</h2>
+          <p className="text-xs text-muted-foreground">UoM Engineering</p>
         </div>
       </div>
 
@@ -138,7 +139,7 @@ export function DashboardSidebar() {
           <VisuallyHidden>
             <SheetTitle>Navigation Menu</SheetTitle>
             <SheetDescription>
-              Main navigation menu for the Alumni Hub dashboard
+              Main navigation menu for the 93/94 Batch of University of Moratuwa dashboard
             </SheetDescription>
           </VisuallyHidden>
           <SidebarContent />
