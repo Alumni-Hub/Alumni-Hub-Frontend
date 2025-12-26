@@ -26,6 +26,8 @@ export interface BatchmateFilters {
   field?: string
   whatsappMobile?: string
   mobile?: string
+  phoneConfirmation?: string
+  attendance?: string
 }
 
 export const batchmateService = {
@@ -47,6 +49,8 @@ export const batchmateService = {
       if (filters.field) filterObj.field = { $eq: filters.field }
       if (filters.whatsappMobile) filterObj.whatsappMobile = { $contains: filters.whatsappMobile }
       if (filters.mobile) filterObj.mobile = { $contains: filters.mobile }
+      if (filters.phoneConfirmation) filterObj.phoneConfirmation = { $eq: filters.phoneConfirmation }
+      if (filters.attendance) filterObj.attendance = { $eq: filters.attendance }
       
       params.filters = filterObj
     }

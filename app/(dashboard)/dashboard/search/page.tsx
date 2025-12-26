@@ -27,6 +27,8 @@ export default function GlobalSearchPage() {
     whatsappMobile: "",
     mobile: "",
     field: "all",
+    attendance: "all",
+    phoneConfirmation: "all",
   })
 
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -83,6 +85,12 @@ export default function GlobalSearchPage() {
         searchFilters.field = user.assignedField
       }
 
+      // Add attendance filter
+      if (filters.attendance !== "all") searchFilters.attendance = filters.attendance
+
+      // Add phone confirmation filter
+      if (filters.phoneConfirmation !== "all") searchFilters.phoneConfirmation = filters.phoneConfirmation
+
       const results = await batchmateService.getAll(searchFilters)
       setSearchResults(results)
     } catch (error) {
@@ -107,13 +115,15 @@ export default function GlobalSearchPage() {
       whatsappMobile: "",
       mobile: "",
       field: "all",
+      attendance: "all",
+      phoneConfirmation: "all",
     })
     setHasSearched(false)
     setSearchResults([])
   }
 
   const hasFilters = Object.entries(filters).some(([key, value]) =>
-    ["country", "field"].includes(key) ? value !== "all" : value !== "",
+    ["country", "field", "attendance", "phoneConfirmation"].includes(key) ? value !== "all" : value !== "",
   )
 
   const canEditBatchmate = (batchmateField: string) => {
@@ -238,6 +248,38 @@ export default function GlobalSearchPage() {
                 </Select>
               </div>
             )}
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Phone Confirmation</label>
+              <Select
+                value={filters.phoneConfirmation}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, phoneConfirmation: value }))}
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground">Attendance</label>
+              <Select
+                value={filters.attendance}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, attendance: value }))}
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="Present">Present</SelectItem>
+                  <SelectItem value="Absent">Absent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="mt-6 flex justify-end">
             <Button onClick={handleSearch} disabled={isSearching} className="bg-primary hover:bg-primary/90">
@@ -275,13 +317,15 @@ export default function GlobalSearchPage() {
                       <TableHead className="font-semibold">Field</TableHead>
                       <TableHead className="font-semibold">Country</TableHead>
                       <TableHead className="font-semibold">Workplace</TableHead>
+                      <TableHead className="font-semibold">Phone Confirm</TableHead>
+                      <TableHead className="font-semibold">Attendance</TableHead>
                       <TableHead className="text-right font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {searchResults.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-32 text-center">
+                        <TableCell colSpan={8} className="h-32 text-center">
                           <p className="text-muted-foreground">No results found</p>
                         </TableCell>
                       </TableRow>
@@ -316,6 +360,36 @@ export default function GlobalSearchPage() {
                             </TableCell>
                             <TableCell className="text-muted-foreground">{batchmate.country || "—"}</TableCell>
                             <TableCell className="text-muted-foreground">{batchmate.workingPlace || "—"}</TableCell>
+                            <TableCell>
+                              {batchmate.phoneConfirmation ? (
+                                <Badge 
+                                  variant="outline" 
+                                  className={batchmate.phoneConfirmation === "Yes" 
+                                    ? "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5" 
+                                    : "border-orange-500/30 text-orange-600 dark:text-orange-400 bg-orange-500/5"
+                                  }
+                                >
+                                  {batchmate.phoneConfirmation}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {batchmate.attendance ? (
+                                <Badge 
+                                  variant="outline" 
+                                  className={batchmate.attendance === "Present" 
+                                    ? "border-green-500/30 text-green-600 dark:text-green-400 bg-green-500/5" 
+                                    : "border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/5"
+                                  }
+                                >
+                                  {batchmate.attendance}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
                             <TableCell className="text-right">
                               {canEditBatchmate(batchmate.field) && (
                                 <Button variant="ghost" size="sm" asChild>

@@ -20,6 +20,8 @@ export default function BatchmatesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [fieldFilter, setFieldFilter] = useState<string>("all")
   const [countryFilter, setCountryFilter] = useState<string>("all")
+  const [phoneConfirmationFilter, setPhoneConfirmationFilter] = useState<string>("all")
+  const [attendanceFilter, setAttendanceFilter] = useState<string>("all")
   const [batchmates, setBatchmates] = useState<Batchmate[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -97,8 +99,23 @@ export default function BatchmatesPage() {
       result = result.filter((b) => b.country === countryFilter)
     }
 
+    if (phoneConfirmationFilter !== "all") {
+      result = result.filter((b) => b.phoneConfirmation === phoneConfirmationFilter)
+    }
+
+    if (attendanceFilter !== "all") {
+      result = result.filter((b) => b.attendance === attendanceFilter)
+    }
+
+    // Sort by phone confirmation: "Yes" at the top
+    result.sort((a, b) => {
+      if (a.phoneConfirmation === "Yes" && b.phoneConfirmation !== "Yes") return -1
+      if (a.phoneConfirmation !== "Yes" && b.phoneConfirmation === "Yes") return 1
+      return 0
+    })
+
     return result
-  }, [user, batchmates, searchTerm, fieldFilter, countryFilter])
+  }, [user, batchmates, searchTerm, fieldFilter, countryFilter, phoneConfirmationFilter, attendanceFilter])
 
   const availableCountries = useMemo(() => {
     return [...new Set(batchmates.map((b) => b.country).filter(Boolean))].sort() as string[]
@@ -108,9 +125,11 @@ export default function BatchmatesPage() {
     setSearchTerm("")
     setFieldFilter("all")
     setCountryFilter("all")
+    setPhoneConfirmationFilter("all")
+    setAttendanceFilter("all")
   }
 
-  const hasFilters = searchTerm || fieldFilter !== "all" || countryFilter !== "all"
+  const hasFilters = searchTerm || fieldFilter !== "all" || countryFilter !== "all" || phoneConfirmationFilter !== "all" || attendanceFilter !== "all"
 
   // Calculate attendance statistics
   const attendanceStats = useMemo(() => {
@@ -288,6 +307,28 @@ export default function BatchmatesPage() {
                       {country}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={phoneConfirmationFilter} onValueChange={setPhoneConfirmationFilter}>
+                <SelectTrigger className="w-[160px] bg-input border-border">
+                  <SelectValue placeholder="Phone Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Phone</SelectItem>
+                  <SelectItem value="Yes">Yes</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={attendanceFilter} onValueChange={setAttendanceFilter}>
+                <SelectTrigger className="w-[160px] bg-input border-border">
+                  <SelectValue placeholder="Attendance" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Attendance</SelectItem>
+                  <SelectItem value="Present">Present</SelectItem>
+                  <SelectItem value="Absent">Absent</SelectItem>
                 </SelectContent>
               </Select>
 
