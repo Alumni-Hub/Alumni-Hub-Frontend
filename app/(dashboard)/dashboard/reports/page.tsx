@@ -120,6 +120,31 @@ export default function ReportsPage() {
     }
   };
 
+  const handleExportAll = (format: "excel" | "pdf") => {
+    const allData = accessibleBatchmates;
+    if (allData.length === 0) {
+      sonnerToast.error("No data to export");
+      return;
+    }
+
+    sonnerToast.info(`Generating ${format.toUpperCase()} report...`, {
+      description: `Processing ${allData.length} records...`,
+    });
+
+    const filename = '93-94-batch-report-all';
+    const success = format === 'excel' ? exportToExcel(allData, filename) : exportToPDF(allData, filename);
+
+    if (success) {
+      sonnerToast.success("Export Complete", {
+        description: `Report has been downloaded successfully as ${format.toUpperCase()}.`,
+      });
+    } else {
+      sonnerToast.error("Export Failed", {
+        description: "There was an error generating the report. Please try again.",
+      });
+    }
+  };
+
   const handlePreview = () => {
     setShowPreview(true)
   }
@@ -243,6 +268,27 @@ export default function ReportsPage() {
                     PDF
                   </Button>
                 </div>
+
+                {user?.role === "super_admin" && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <Button
+                      onClick={() => handleExportAll("excel")}
+                      variant="outline"
+                      className="border-border"
+                    >
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      Export All (Excel)
+                    </Button>
+                    <Button
+                      onClick={() => handleExportAll("pdf")}
+                      variant="outline"
+                      className="border-border"
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Export All (PDF)
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -346,18 +392,20 @@ export default function ReportsPage() {
                           <TableHead className="font-semibold">Field</TableHead>
                           <TableHead className="font-semibold">Country</TableHead>
                           <TableHead className="font-semibold">Workplace</TableHead>
+                          <TableHead className="font-semibold">Phone Conf.</TableHead>
+                          <TableHead className="font-semibold">Attendance</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {isLoading ? (
                           <TableRow>
-                            <TableCell colSpan={7} className="h-32 text-center">
+                            <TableCell colSpan={9} className="h-32 text-center">
                               <p className="text-muted-foreground">Loading report data...</p>
                             </TableCell>
                           </TableRow>
                         ) : reportData.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={7} className="h-32 text-center">
+                            <TableCell colSpan={9} className="h-32 text-center">
                               <p className="text-muted-foreground">No data available for preview</p>
                             </TableCell>
                           </TableRow>
@@ -375,6 +423,8 @@ export default function ReportsPage() {
                             </TableCell>
                             <TableCell>{batchmate.country || "—"}</TableCell>
                             <TableCell>{batchmate.workingPlace || "—"}</TableCell>
+                            <TableCell>{batchmate.phoneConfirmation || "—"}</TableCell>
+                            <TableCell>{batchmate.attendance || "—"}</TableCell>
                           </TableRow>
                         ))
                         )}

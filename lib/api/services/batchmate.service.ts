@@ -13,6 +13,8 @@ export interface BatchmateData {
   field: string
   universityPhoto?: any
   currentPhoto?: any
+  phoneConfirmation?: "Yes" | "No"
+  attendance?: "Present" | "Absent"
 }
 
 export interface BatchmateFilters {

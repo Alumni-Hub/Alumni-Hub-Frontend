@@ -17,6 +17,8 @@ export function exportToExcel(data: Batchmate[], filename: string = 'batchmates-
       'Country': batchmate.country || '',
       'Address': batchmate.address || '',
       'Working Place': batchmate.workingPlace || '',
+      'Phone Confirmation': batchmate.phoneConfirmation || '',
+      'Attendance': batchmate.attendance || '',
     }));
 
     // Create worksheet
@@ -34,6 +36,8 @@ export function exportToExcel(data: Batchmate[], filename: string = 'batchmates-
       { wch: 20 }, // Country
       { wch: 35 }, // Address
       { wch: 30 }, // Working Place
+      { wch: 18 }, // Phone Confirmation
+      { wch: 15 }, // Attendance
     ];
     ws['!cols'] = colWidths;
 
@@ -80,12 +84,14 @@ export function exportToPDF(data: Batchmate[], filename: string = 'batchmates-re
       batchmate.field || '',
       batchmate.country || '',
       batchmate.workingPlace || '',
+      batchmate.phoneConfirmation || '',
+      batchmate.attendance || '',
     ]);
 
     // Add table
     autoTable(doc, {
       startY: 48,
-      head: [['Full Name', 'Calling Name', 'Email', 'WhatsApp', 'Field', 'Country', 'Workplace']],
+      head: [['Full Name', 'Calling Name', 'Email', 'WhatsApp', 'Field', 'Country', 'Workplace', 'Phone Conf.', 'Attendance']],
       body: tableData,
       styles: {
         fontSize: 8,
