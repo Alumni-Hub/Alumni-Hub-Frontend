@@ -15,6 +15,34 @@ import {
 import { eventAttendanceService } from "@/lib/api/services/event-attendance.service"
 import { eventService } from "@/lib/api/services/event.service"
 
+/**
+ * Normalize phone number for display and validation
+ * Handles: +94714007983, 0714007983, 94714007983
+ */
+function normalizePhoneNumber(phone: string): string {
+  if (!phone) return phone;
+  
+  // Remove all spaces, dashes, and parentheses
+  let normalized = phone.replace(/[\s\-\(\)]/g, '');
+  
+  // Remove leading + if present
+  if (normalized.startsWith('+')) {
+    normalized = normalized.substring(1);
+  }
+  
+  // If starts with 0, replace with 94 (Sri Lanka country code)
+  if (normalized.startsWith('0')) {
+    normalized = '94' + normalized.substring(1);
+  }
+  
+  // Ensure it starts with 94
+  if (!normalized.startsWith('94')) {
+    normalized = '94' + normalized;
+  }
+  
+  return normalized;
+}
+
 function AttendanceRegisterForm() {
   const searchParams = useSearchParams()
   const eventId = searchParams.get("eventId")
@@ -69,25 +97,36 @@ function AttendanceRegisterForm() {
     setError("")
 
     try {
+      // Normalize the mobile number before sending
+      const normalizedMobile = normalizePhoneNumber(formData.mobile)
+      
       const result = await eventAttendanceService.checkByMobile(formData.mobile)
 
       if (result.found && result.data) {
         // Auto-populate form with existing data
         setFormData({
           ...formData,
+          mobile: normalizedMobile, // Update with normalized number
           name: result.data.callingName || "",
           fullName: result.data.fullName || "",
           nickName: result.data.nickName || "",
           address: result.data.address || "",
           country: result.data.country || "",
           workingPlace: result.data.workingPlace || "",
-          whatsapp: result.data.whatsappMobile || formData.mobile,
+          whatsapp: result.data.whatsappMobile || normalizedMobile,
           email: result.data.email || "",
           gmail: result.data.email || "",
         })
         setIsExistingUser(true)
+        setError("") // Clear any previous errors
       } else {
         setIsExistingUser(false)
+        // Update mobile to normalized format even for new users
+        setFormData({
+          ...formData,
+          mobile: normalizedMobile,
+          whatsapp: normalizedMobile,
+        })
         setError(result.message || "You haven't registered earlier. Please register into the system.")
       }
       setMobileChecked(true)
@@ -112,6 +151,31 @@ function AttendanceRegisterForm() {
       return
     }
 
+    // Validate required fields
+    if (!formData.name || !formData.name.trim()) {
+      setError("Name is required")
+      return
+    }
+
+    if (!formData.fullName || !formData.fullName.trim()) {
+      setError("Full Name is required")
+      return
+    }
+
+    if (!formData.mobile || formData.mobile.length < 10) {
+      setError("Valid mobile number is required")
+      return
+    }
+
+    // Validate email format if provided
+    if (formData.email && formData.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email)) {
+        setError("Please enter a valid email address")
+        return
+      }
+    }
+
     setLoading(true)
     setError("")
 
@@ -129,8 +193,12 @@ function AttendanceRegisterForm() {
         setError("Failed to register attendance. Please try again.")
       }
     } catch (err: any) {
-      setError(err.response?.data?.error?.message || "Failed to register attendance. Please try again.")
-      console.error(err)
+      console.error('Full error:', err)
+      const errorMessage = err.response?.data?.error?.message 
+        || err.response?.data?.message 
+        || err.message 
+        || "Failed to register attendance. Please try again."
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -270,7 +338,7 @@ function AttendanceRegisterForm() {
               <div className="flex gap-2">
                 <Input
                   id="mobile"
-                  placeholder="e.g., 0771234567"
+                  placeholder="e.g., 0714007983 or +94714007983"
                   value={formData.mobile}
                   onChange={(e) => handleInputChange("mobile", e.target.value)}
                   disabled={mobileChecked}
@@ -296,9 +364,14 @@ function AttendanceRegisterForm() {
                 )}
               </div>
               {!mobileChecked && (
-                <p className="text-sm text-blue-700 font-medium">
-                  Enter your mobile number and click Check to load your existing data or register as new
-                </p>
+                <div className="space-y-1">
+                  <p className="text-sm text-blue-700 font-medium">
+                    Enter your mobile number and click Check to load your existing data or register as new
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    You can enter: 0714007983, +94714007983, or 94714007983
+                  </p>
+                </div>
               )}
               {mobileChecked && (
                 <p className="text-sm text-green-700 font-medium flex items-center gap-1">
@@ -329,7 +402,13 @@ function AttendanceRegisterForm() {
                       value={formData.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       required
+                      minLength={2}
+                      maxLength={50}
+                      className={!formData.name && error ? "border-red-500" : ""}
                     />
+                    {!formData.name && error && (
+                      <p className="text-xs text-red-500">Name is required</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -343,7 +422,13 @@ function AttendanceRegisterForm() {
                       value={formData.fullName}
                       onChange={(e) => handleInputChange("fullName", e.target.value)}
                       required
+                      minLength={3}
+                      maxLength={100}
+                      className={!formData.fullName && error ? "border-red-500" : ""}
                     />
+                    {!formData.fullName && error && (
+                      <p className="text-xs text-red-500">Full Name is required</p>
+                    )}
                   </div>
                 </div>
 
