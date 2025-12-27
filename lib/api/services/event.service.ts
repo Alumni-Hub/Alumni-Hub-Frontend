@@ -2,6 +2,7 @@ import apiClient from "../client"
 
 export interface Event {
   id: number
+  documentId?: string
   name: string
   description?: string
   eventDate: string
@@ -79,7 +80,7 @@ export const eventService = {
   },
 
   // Delete an event
-  async delete(id: number): Promise<void> {
+  async delete(id: number | string): Promise<void> {
     try {
       await apiClient.delete(`/events/${id}`)
     } catch (error) {

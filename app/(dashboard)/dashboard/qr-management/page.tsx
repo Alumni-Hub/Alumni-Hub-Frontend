@@ -106,7 +106,7 @@ export default function QRManagementPage() {
     }
   }
 
-  const handleDeleteEvent = async (eventId: number) => {
+  const handleDeleteEvent = async (eventId: number | string) => {
     if (!confirm("Are you sure you want to delete this event?")) return
 
     try {
@@ -350,7 +350,7 @@ export default function QRManagementPage() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDeleteEvent(event.id)}
+                  onClick={() => handleDeleteEvent(event.documentId || event.id)}
                   className="w-full"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
