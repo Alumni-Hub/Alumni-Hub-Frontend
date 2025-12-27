@@ -51,6 +51,7 @@ function AttendanceRegisterForm() {
   const [loading, setLoading] = useState(false)
   const [checkingMobile, setCheckingMobile] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
   const [error, setError] = useState("")
   const [successMessage, setSuccessMessage] = useState("")
 
@@ -188,6 +189,7 @@ function AttendanceRegisterForm() {
 
       if (result.success) {
         setSuccessMessage(result.message)
+        setAlreadyRegistered(result.alreadyRegistered || false)
         setSubmitted(true)
       } else {
         setError("Failed to register attendance. Please try again.")
@@ -223,19 +225,23 @@ function AttendanceRegisterForm() {
               <p className="text-sm text-muted-foreground">University of Moratuwa - Faculty of Engineering</p>
             </div>
             <div className="flex justify-center mb-4">
-              <CheckCircle2 className="h-16 w-16 text-green-500" />
+              <CheckCircle2 className={`h-16 w-16 ${alreadyRegistered ? 'text-blue-500' : 'text-green-500'}`} />
             </div>
-            <CardTitle className="text-2xl">Registration Successful!</CardTitle>
+            <CardTitle className="text-2xl">
+              {alreadyRegistered ? 'Already Registered!' : 'Registration Successful!'}
+            </CardTitle>
             <CardDescription>{successMessage}</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-green-800 font-medium">
-                Your attendance has been marked for
+            <div className={`${alreadyRegistered ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border rounded-lg p-4`}>
+              <p className={`text-sm ${alreadyRegistered ? 'text-blue-800' : 'text-green-800'} font-medium`}>
+                {alreadyRegistered ? 'Your attendance was previously confirmed for' : 'Your attendance has been marked for'}
               </p>
-              <p className="text-lg font-bold text-green-900 mt-1">{event?.name}</p>
+              <p className={`text-lg font-bold ${alreadyRegistered ? 'text-blue-900' : 'text-green-900'} mt-1`}>
+                {event?.name}
+              </p>
               {event?.eventDate && (
-                <p className="text-xs text-green-700 mt-1">
+                <p className={`text-xs ${alreadyRegistered ? 'text-blue-700' : 'text-green-700'} mt-1`}>
                   {new Date(event.eventDate).toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -245,8 +251,18 @@ function AttendanceRegisterForm() {
                 </p>
               )}
             </div>
+            {alreadyRegistered && (
+              <Alert className="bg-blue-50 border-blue-200">
+                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  No need to register again - you're all set! Your information has been updated.
+                </AlertDescription>
+              </Alert>
+            )}
             <p className="text-sm text-muted-foreground">
-              Thank you for registering! We look forward to seeing you at the event.
+              {alreadyRegistered 
+                ? 'See you at the event!' 
+                : 'Thank you for registering! We look forward to seeing you at the event.'}
             </p>
             <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
               Register Another Person

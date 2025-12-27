@@ -66,7 +66,7 @@ export const eventAttendanceService = {
     eventId: number | string,
     mobile: string,
     data: AttendanceRegistrationData
-  ): Promise<{ success: boolean; message: string; data: any }> {
+  ): Promise<{ success: boolean; message: string; data: any; alreadyRegistered?: boolean }> {
     try {
       const response = await apiClient.post("/event-attendances/register-qr", {
         eventId,

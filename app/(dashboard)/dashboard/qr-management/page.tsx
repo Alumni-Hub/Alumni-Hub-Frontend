@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Download, QrCode, Plus, Eye, Trash2, Calendar } from "lucide-react"
+import { Loader2, Download, QrCode, Plus, Eye, Trash2, Calendar, Edit } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { eventService, Event } from "@/lib/api/services/event.service"
 import { useToast } from "@/hooks/use-toast"
@@ -18,11 +18,22 @@ export default function QRManagementPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const { toast } = useToast()
 
   const [newEvent, setNewEvent] = useState({
+    name: "",
+    description: "",
+    eventDate: "",
+    eventType: "Alumni Party",
+    venue: "",
+    status: "Upcoming",
+  })
+
+  const [editEvent, setEditEvent] = useState({
     name: "",
     description: "",
     eventDate: "",
@@ -128,6 +139,51 @@ export default function QRManagementPage() {
       })
       // Reload events on error to ensure consistency
       loadEvents()
+    }
+  }
+
+  const handleEditEvent = (event: Event) => {
+    setSelectedEvent(event)
+    setEditEvent({
+      name: event.name,
+      description: event.description || "",
+      eventDate: event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 16) : "",
+      eventType: event.eventType,
+      venue: event.venue || "",
+      status: event.status,
+    })
+    setShowEditDialog(true)
+  }
+
+  const handleUpdateEvent = async () => {
+    if (!selectedEvent || !editEvent.name || !editEvent.eventDate) {
+      toast({
+        title: "Error",
+        description: "Event name and date are required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setUpdating(true)
+      const eventId = selectedEvent.documentId || selectedEvent.id
+      await eventService.update(eventId, editEvent)
+      toast({
+        title: "Success",
+        description: "Event updated successfully",
+      })
+      setShowEditDialog(false)
+      setSelectedEvent(null)
+      loadEvents()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update event",
+        variant: "destructive",
+      })
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -252,6 +308,106 @@ export default function QRManagementPage() {
         </Dialog>
       </div>
 
+      {/* Edit Event Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+            <DialogDescription>Update event details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-event-name">Event Name *</Label>
+              <Input
+                id="edit-event-name"
+                placeholder="Alumni Reunion 2025"
+                value={editEvent.name}
+                onChange={(e) => setEditEvent({ ...editEvent, name: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-event-description">Description</Label>
+              <Textarea
+                id="edit-event-description"
+                placeholder="Event description..."
+                value={editEvent.description}
+                onChange={(e) => setEditEvent({ ...editEvent, description: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-event-date">Event Date *</Label>
+              <Input
+                id="edit-event-date"
+                type="datetime-local"
+                value={editEvent.eventDate}
+                onChange={(e) => setEditEvent({ ...editEvent, eventDate: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-event-type">Event Type</Label>
+              <Select
+                value={editEvent.eventType}
+                onValueChange={(value) => setEditEvent({ ...editEvent, eventType: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Alumni Party">Alumni Party</SelectItem>
+                  <SelectItem value="Reunion">Reunion</SelectItem>
+                  <SelectItem value="Conference">Conference</SelectItem>
+                  <SelectItem value="Workshop">Workshop</SelectItem>
+                  <SelectItem value="Networking">Networking</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-event-venue">Venue</Label>
+              <Input
+                id="edit-event-venue"
+                placeholder="Hotel Grand, Colombo"
+                value={editEvent.venue}
+                onChange={(e) => setEditEvent({ ...editEvent, venue: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-event-status">Status</Label>
+              <Select
+                value={editEvent.status}
+                onValueChange={(value) => setEditEvent({ ...editEvent, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Upcoming">Upcoming</SelectItem>
+                  <SelectItem value="Ongoing">Ongoing</SelectItem>
+                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button onClick={handleUpdateEvent} disabled={updating} className="w-full">
+              {updating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Event"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {loading ? (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -353,15 +509,24 @@ export default function QRManagementPage() {
                   </Button>
                 )}
 
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteEvent(event.documentId || event.id)}
-                  className="w-full"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Event
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditEvent(event)}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteEvent(event.documentId || event.id)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

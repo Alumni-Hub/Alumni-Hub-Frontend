@@ -69,7 +69,7 @@ export const eventService = {
   },
 
   // Update an event
-  async update(id: number, data: Partial<Event>): Promise<Event> {
+  async update(id: number | string, data: Partial<Event>): Promise<Event> {
     try {
       const response = await apiClient.put(`/events/${id}`, { data })
       return response.data.data || response.data
