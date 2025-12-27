@@ -3,6 +3,104 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Batchmate } from './types';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
+
+/**
+ * Export field-wise name lists to Excel
+ * Each field is in a separate sheet, alphabetically sorted
+ */
+export async function exportFieldwiseNameLists() {
+  try {
+    const response = await fetch(`${API_URL}/batchmates/export/fieldwise`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to download fieldwise export');
+    }
+
+    // Get the blob
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Extract filename from Content-Disposition header or use default
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `Fieldwise_Name_Lists_${new Date().toISOString().split('T')[0]}.xlsx`;
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+    
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    return true;
+  } catch (error) {
+    console.error('Error downloading fieldwise export:', error);
+    return false;
+  }
+}
+
+/**
+ * Export raffle cut sheet to Excel
+ * Single column with bordered cells for printing and cutting
+ */
+export async function exportRaffleCutSheet() {
+  try {
+    const response = await fetch(`${API_URL}/batchmates/export/raffle-cut-sheet`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to download raffle cut sheet');
+    }
+
+    // Get the blob
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Extract filename from Content-Disposition header or use default
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `Raffle_Cut_Sheet_${new Date().toISOString().split('T')[0]}.xlsx`;
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+    
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    return true;
+  } catch (error) {
+    console.error('Error downloading raffle cut sheet:', error);
+    return false;
+  }
+}
+
 export function exportToExcel(data: Batchmate[], filename: string = 'batchmates-report') {
   try {
     // Prepare data for Excel

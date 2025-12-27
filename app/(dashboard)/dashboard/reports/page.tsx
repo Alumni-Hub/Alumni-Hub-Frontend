@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { batchmateService } from "@/lib/api/services/batchmate.service"
 import { ENGINEERING_FIELDS, type Batchmate } from "@/lib/types"
-import { exportToExcel, exportToPDF } from "@/lib/export-utils"
+import { exportToExcel, exportToPDF, exportFieldwiseNameLists, exportRaffleCutSheet } from "@/lib/export-utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -149,6 +149,42 @@ export default function ReportsPage() {
     setShowPreview(true)
   }
 
+  const handleFieldwiseExport = async () => {
+    sonnerToast.info("Generating field-wise export...", {
+      description: "Creating separate sheets for each field...",
+    });
+
+    const success = await exportFieldwiseNameLists();
+
+    if (success) {
+      sonnerToast.success("Export Complete", {
+        description: "Field-wise name lists have been downloaded successfully.",
+      });
+    } else {
+      sonnerToast.error("Export Failed", {
+        description: "There was an error generating the export. Please try again.",
+      });
+    }
+  };
+
+  const handleRaffleCutSheetExport = async () => {
+    sonnerToast.info("Generating raffle cut sheet...", {
+      description: "Creating printable name list with borders...",
+    });
+
+    const success = await exportRaffleCutSheet();
+
+    if (success) {
+      sonnerToast.success("Export Complete", {
+        description: "Raffle cut sheet has been downloaded successfully.",
+      });
+    } else {
+      sonnerToast.error("Export Failed", {
+        description: "There was an error generating the export. Please try again.",
+      });
+    }
+  };
+
   // Stats - only show fields that have data
   const fieldStats = accessibleFields
     .map((field) => ({
@@ -270,24 +306,52 @@ export default function ReportsPage() {
                 </div>
 
                 {user?.role === "super_admin" && (
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <Button
-                      onClick={() => handleExportAll("excel")}
-                      variant="outline"
-                      className="border-border"
-                    >
-                      <FileSpreadsheet className="mr-2 h-4 w-4" />
-                      Export All (Excel)
-                    </Button>
-                    <Button
-                      onClick={() => handleExportAll("pdf")}
-                      variant="outline"
-                      className="border-border"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Export All (PDF)
-                    </Button>
-                  </div>
+                  <>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => handleExportAll("excel")}
+                        variant="outline"
+                        className="border-border"
+                      >
+                        <FileSpreadsheet className="mr-2 h-4 w-4" />
+                        Export All (Excel)
+                      </Button>
+                      <Button
+                        onClick={() => handleExportAll("pdf")}
+                        variant="outline"
+                        className="border-border"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Export All (PDF)
+                      </Button>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <p className="text-xs font-semibold text-muted-foreground mb-3">SPECIAL EXPORTS</p>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={handleFieldwiseExport}
+                          variant="outline"
+                          className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                        >
+                          <FileSpreadsheet className="mr-2 h-4 w-4" />
+                          Field-wise Name Lists
+                        </Button>
+                        <Button
+                          onClick={handleRaffleCutSheetExport}
+                          variant="outline"
+                          className="w-full border-accent/50 text-accent hover:bg-accent/10"
+                        >
+                          <FileSpreadsheet className="mr-2 h-4 w-4" />
+                          Raffle Cut Sheet
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Field-wise: Separate sheets per field, alphabetically sorted<br/>
+                        Raffle: Bordered cells for printing & cutting
+                      </p>
+                    </div>
+                  </>
                 )}
               </div>
             </CardContent>
