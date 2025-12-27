@@ -46,8 +46,8 @@ export const eventService = {
     }
   },
 
-  // Get a single event by ID
-  async getById(id: number): Promise<Event> {
+  // Get a single event by ID or documentId
+  async getById(id: number | string): Promise<Event> {
     try {
       const response = await apiClient.get(`/events/${id}`)
       return response.data.data || response.data

@@ -63,7 +63,7 @@ export const eventAttendanceService = {
 
   // Register attendance via QR code scan
   async registerQRAttendance(
-    eventId: number,
+    eventId: number | string,
     mobile: string,
     data: AttendanceRegistrationData
   ): Promise<{ success: boolean; message: string; data: any }> {

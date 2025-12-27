@@ -111,17 +111,23 @@ export default function QRManagementPage() {
 
     try {
       await eventService.delete(eventId)
+      // Remove event from local state immediately
+      setEvents(prevEvents => prevEvents.filter(e => {
+        const id = e.documentId || e.id
+        return id !== eventId
+      }))
       toast({
         title: "Success",
         description: "Event deleted successfully",
       })
-      loadEvents()
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete event",
         variant: "destructive",
       })
+      // Reload events on error to ensure consistency
+      loadEvents()
     }
   }
 
