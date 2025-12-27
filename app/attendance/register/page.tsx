@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react"
 import { eventAttendanceService } from "@/lib/api/services/event-attendance.service"
 import { eventService } from "@/lib/api/services/event.service"
 
-export default function AttendanceRegisterPage() {
+function AttendanceRegisterForm() {
   const searchParams = useSearchParams()
   const eventId = searchParams.get("eventId")
 
@@ -343,5 +343,21 @@ export default function AttendanceRegisterPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function AttendanceRegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Card className="w-full max-w-md">
+          <CardContent className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <AttendanceRegisterForm />
+    </Suspense>
   )
 }
