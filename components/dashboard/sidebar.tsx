@@ -21,6 +21,8 @@ import {
   Menu,
   ChevronRight,
   Upload,
+  QrCode,
+  CalendarCheck,
 } from "lucide-react"
 
 const navigation = [
@@ -28,12 +30,16 @@ const navigation = [
   { name: "Batchmates", href: "/dashboard/batchmates", icon: Users },
   { name: "Add Batchmate", href: "/dashboard/batchmates/new", icon: UserPlus },
   { name: "Bulk Import", href: "/dashboard/bulk-import", icon: Upload },
+  { name: "Event Attendance", href: "/dashboard/event-attendance", icon: CalendarCheck },
   { name: "Full View", href: "/dashboard/full-view", icon: Layers },
   { name: "Global Search", href: "/dashboard/search", icon: Search },
   { name: "Reports", href: "/dashboard/reports", icon: FileText },
 ]
 
-const adminNavigation = [{ name: "User Management", href: "/dashboard/users", icon: Users }]
+const adminNavigation = [
+  { name: "User Management", href: "/dashboard/users", icon: Users },
+  { name: "QR Management", href: "/dashboard/qr-management", icon: QrCode },
+]
 
 function SidebarContent() {
   const pathname = usePathname()
