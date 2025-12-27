@@ -17,7 +17,7 @@ import { eventService } from "@/lib/api/services/event.service"
 
 /**
  * Normalize phone number for display and validation
- * Handles: +94714007983, 0714007983, 94714007983
+ * Handles: +94711234567, 0711234567, 94711234567
  */
 function normalizePhoneNumber(phone: string): string {
   if (!phone) return phone;
@@ -354,7 +354,7 @@ function AttendanceRegisterForm() {
               <div className="flex gap-2">
                 <Input
                   id="mobile"
-                  placeholder="e.g., 0714007983 or +94714007983"
+                  placeholder="e.g., 0711234567 or +94711234567"
                   value={formData.mobile}
                   onChange={(e) => handleInputChange("mobile", e.target.value)}
                   disabled={mobileChecked}
@@ -385,7 +385,7 @@ function AttendanceRegisterForm() {
                     Enter your mobile number and click Check to load your existing data or register as new
                   </p>
                   <p className="text-xs text-blue-600">
-                    You can enter: 0714007983, +94714007983, or 94714007983
+                    You can enter: 0711234567, +94711234567, or 94711234567
                   </p>
                 </div>
               )}
