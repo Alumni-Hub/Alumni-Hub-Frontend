@@ -74,7 +74,14 @@ export default function QRManagementPage() {
 
     try {
       setCreating(true)
-      await eventService.create(newEvent)
+      
+      // Convert datetime-local format to ISO datetime string
+      const eventData = {
+        ...newEvent,
+        eventDate: new Date(newEvent.eventDate).toISOString(),
+      }
+      
+      await eventService.create(eventData)
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -168,7 +175,14 @@ export default function QRManagementPage() {
     try {
       setUpdating(true)
       const eventId = selectedEvent.documentId || selectedEvent.id
-      await eventService.update(eventId, editEvent)
+      
+      // Convert datetime-local format to ISO datetime string
+      const eventData = {
+        ...editEvent,
+        eventDate: new Date(editEvent.eventDate).toISOString(),
+      }
+      
+      await eventService.update(eventId, eventData)
       toast({
         title: "Success",
         description: "Event updated successfully",

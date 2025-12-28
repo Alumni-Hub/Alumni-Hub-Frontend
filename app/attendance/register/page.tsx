@@ -71,11 +71,20 @@ function AttendanceRegisterForm() {
   const [isExistingUser, setIsExistingUser] = useState(false)
   const [mobileChecked, setMobileChecked] = useState(false)
 
+
+  // Poll for event data every 10 seconds to always show latest date/time
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
     if (eventId) {
-      loadEvent()
+      loadEvent();
+      interval = setInterval(() => {
+        loadEvent();
+      }, 10000); // 10 seconds
     }
-  }, [eventId])
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [eventId]);
 
   const loadEvent = async () => {
     try {
