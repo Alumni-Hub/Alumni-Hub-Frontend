@@ -58,8 +58,8 @@ function AttendanceRegisterForm() {
 
   const [formData, setFormData] = useState({
     mobile: "",
-    name: "",
-    fullName: "",
+    firstName: "",
+    lastName: "",
     nickName: "",
     address: "",
     country: "",
@@ -116,11 +116,17 @@ function AttendanceRegisterForm() {
 
       if (result.found && result.data) {
         // Auto-populate form with existing data
+        // Split full name into first and last name
+        const fullName = result.data.fullName || "";
+        const nameParts = fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+        
         setFormData({
           ...formData,
           mobile: normalizedMobile, // Update with normalized number
-          name: result.data.callingName || "",
-          fullName: result.data.fullName || "",
+          firstName: result.data.callingName || firstName,
+          lastName: lastName,
           nickName: result.data.nickName || "",
           address: result.data.address || "",
           country: result.data.country || "",
@@ -165,13 +171,13 @@ function AttendanceRegisterForm() {
     }
 
     // Validate required fields
-    if (!formData.name || !formData.name.trim()) {
-      setError("Name is required")
+    if (!formData.firstName || !formData.firstName.trim()) {
+      setError("First Name is required")
       return
     }
 
-    if (!formData.fullName || !formData.fullName.trim()) {
-      setError("Full Name is required")
+    if (!formData.lastName || !formData.lastName.trim()) {
+      setError("Last Name is required")
       return
     }
 
@@ -193,10 +199,20 @@ function AttendanceRegisterForm() {
     setError("")
 
     try {
+      // Combine first and last name to create full name
+      const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`;
+      
+      // Prepare data for submission
+      const submissionData = {
+        ...formData,
+        name: formData.firstName, // Use firstName as calling name
+        fullName: fullName, // Combined first + last name
+      };
+      
       const result = await eventAttendanceService.registerQRAttendance(
         eventId as string,
         formData.mobile,
-        formData
+        submissionData
       )
 
       if (result.success) {
@@ -420,43 +436,58 @@ function AttendanceRegisterForm() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="font-medium flex items-center gap-2">
+                    <Label htmlFor="firstName" className="font-medium flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      Name *
+                      First Name *
                     </Label>
                     <Input
-                      id="name"
+                      id="firstName"
                       placeholder="e.g., John"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange("firstName", e.target.value)}
                       required
                       minLength={2}
                       maxLength={50}
-                      className={!formData.name && error ? "border-red-500" : ""}
+                      className={!formData.firstName && error ? "border-red-500" : ""}
                     />
-                    {!formData.name && error && (
-                      <p className="text-xs text-red-500">Name is required</p>
+                    {!formData.firstName && error && (
+                      <p className="text-xs text-red-500">First Name is required</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="font-medium flex items-center gap-2">
+                    <Label htmlFor="lastName" className="font-medium flex items-center gap-2">
                       <FileText className="h-4 w-4" />
-                      Full Name *
+                      Last Name *
                     </Label>
                     <Input
-                      id="fullName"
-                      placeholder="e.g., John Doe Silva"
-                      value={formData.fullName}
-                      onChange={(e) => handleInputChange("fullName", e.target.value)}
+                      id="lastName"
+                      placeholder="e.g., Doe"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange("lastName", e.target.value)}
                       required
-                      minLength={3}
-                      maxLength={100}
-                      className={!formData.fullName && error ? "border-red-500" : ""}
+                      minLength={2}
+                      maxLength={50}
+                      className={!formData.lastName && error ? "border-red-500" : ""}
                     />
-                    {!formData.fullName && error && (
-                      <p className="text-xs text-red-500">Full Name is required</p>
+                    {!formData.lastName && error && (
+                      <p className="text-xs text-red-500">Last Name is required</p>
                     )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nickName" className="font-medium flex items-center gap-2">
+                    <Smile className="h-4 w-4" />
+                    Nick Name
+                  </Label>
+                  <Input
+                    id="nickName"
+                    placeholder="e.g., Johnny (optional)"
+                    value={formData.nickName}
+                    onChange={(e) => handleInputChange("nickName", e.target.value)}
+                  />
+                </div>
 
                 {!isExistingUser && (
                   <div className="space-y-2">
