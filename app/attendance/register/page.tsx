@@ -521,21 +521,6 @@ function AttendanceRegisterForm() {
                     <p className="text-xs text-muted-foreground">Select your engineering discipline</p>
                   </div>
                 )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="nickName" className="font-medium flex items-center gap-2">
-                    <Smile className="h-4 w-4" />
-                    Nick Name
-                  </Label>
-                  <Input
-                    id="nickName"
-                    placeholder="e.g., Johnny (optional)"
-                    value={formData.nickName}
-                    onChange={(e) => handleInputChange("nickName", e.target.value)}
-                  />
-                </div>
 
                 <div className="border-t pt-4 col-span-full mt-4">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
