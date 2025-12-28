@@ -573,12 +573,14 @@ function AttendanceRegisterForm() {
                     </Label>
                     <Input
                       id="email"
+                      name="email"
                       type="text"
+                      autoComplete="email"
                       placeholder="e.g., john@example.com"
-                      value={formData.email}
+                      value={formData.email || ""}
                       onChange={(e) => {
-                        handleInputChange("email", e.target.value)
-                        handleInputChange("gmail", e.target.value)
+                        const newValue = e.target.value;
+                        setFormData({ ...formData, email: newValue, gmail: newValue });
                       }}
                     />
                   </div>
