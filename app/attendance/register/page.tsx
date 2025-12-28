@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   Loader2, CheckCircle2, XCircle, User, FileText, Smile, 
@@ -66,6 +67,7 @@ function AttendanceRegisterForm() {
     whatsapp: "",
     email: "",
     gmail: "",
+    field: "Computer Engineering",
   })
 
   const [isExistingUser, setIsExistingUser] = useState(false)
@@ -125,6 +127,7 @@ function AttendanceRegisterForm() {
           workingPlace: result.data.workingPlace || "",
           whatsapp: result.data.whatsappMobile || normalizedMobile,
           email: result.data.email || "",
+          field: result.data.field || "Computer Engineering",
           gmail: result.data.email || "",
         })
         setIsExistingUser(true)
@@ -454,6 +457,39 @@ function AttendanceRegisterForm() {
                     {!formData.fullName && error && (
                       <p className="text-xs text-red-500">Full Name is required</p>
                     )}
+
+                {!isExistingUser && (
+                  <div className="space-y-2">
+                    <Label htmlFor="field" className="font-medium flex items-center gap-2">
+                      <Briefcase className="h-4 w-4" />
+                      Engineering Field *
+                    </Label>
+                    <Select value={formData.field} onValueChange={(value) => handleInputChange("field", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your field" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Computer Engineering">Computer Engineering</SelectItem>
+                        <SelectItem value="Electrical Engineering">Electrical Engineering</SelectItem>
+                        <SelectItem value="Electronics Engineering">Electronics Engineering</SelectItem>
+                        <SelectItem value="Mechanical Engineering">Mechanical Engineering</SelectItem>
+                        <SelectItem value="Civil Engineering">Civil Engineering</SelectItem>
+                        <SelectItem value="Chemical Engineering">Chemical Engineering</SelectItem>
+                        <SelectItem value="Material Engineering">Material Engineering</SelectItem>
+                        <SelectItem value="Mining Engineering">Mining Engineering</SelectItem>
+                        <SelectItem value="Textile Engineering">Textile Engineering</SelectItem>
+                        <SelectItem value="Biomedical Engineering">Biomedical Engineering</SelectItem>
+                        <SelectItem value="Industrial Engineering">Industrial Engineering</SelectItem>
+                        <SelectItem value="Environmental Engineering">Environmental Engineering</SelectItem>
+                        <SelectItem value="Aerospace Engineering">Aerospace Engineering</SelectItem>
+                        <SelectItem value="Software Engineering">Software Engineering</SelectItem>
+                        <SelectItem value="Data Science">Data Science</SelectItem>
+                        <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Select your engineering discipline</p>
+                  </div>
+                )}
                   </div>
                 </div>
 
@@ -537,7 +573,7 @@ function AttendanceRegisterForm() {
                     </Label>
                     <Input
                       id="email"
-                      type="email"
+                      type="text"
                       placeholder="e.g., john@example.com"
                       value={formData.email}
                       onChange={(e) => {
